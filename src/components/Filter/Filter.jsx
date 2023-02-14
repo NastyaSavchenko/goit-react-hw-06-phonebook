@@ -1,19 +1,21 @@
-import PT from 'prop-types';
+import { useDispatch } from 'react-redux';
+import { setFilter } from 'redux/filterSlice';
 
 import { FilterInputStyled, FilterTitleStyled } from './Filter.styled';
 
-const Filter = ({ filterValue, onChange }) => {
+const Filter = () => {
+  const dispatch = useDispatch();
+
+  const onFilterChange = e => {
+    dispatch(setFilter(e.currentTarget.value));
+  };
+
   return (
     <div>
       <FilterTitleStyled>Find contacts by name</FilterTitleStyled>
-      <FilterInputStyled type="text" value={filterValue} onChange={onChange} />
+      <FilterInputStyled type="text" name="filter" onChange={onFilterChange} />
     </div>
   );
 };
 
 export default Filter;
-
-Filter.propTypes = {
-  filterValue: PT.string.isRequired,
-  onChange: PT.func.isRequired,
-};

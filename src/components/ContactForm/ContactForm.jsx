@@ -1,42 +1,38 @@
 import { nanoid } from 'nanoid';
-import PT from 'prop-types';
-import { useState } from 'react';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import { BsFillPersonPlusFill } from 'react-icons/bs';
+import { useDispatch, useSelector } from 'react-redux';
+import { addContact, getContacts } from 'redux/contactsSlice';
 
 import { FormBtn, FormInput, FormTitle } from './ContactForm.styled';
 
-const ContactForm = ({ createNewContact }) => {
-  const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
-
-  const onInputChange = e => {
-    const { name, value } = e.target;
-
-    switch (name) {
-      case 'name':
-        setName(value);
-        break;
-
-      case 'number':
-        setNumber(value);
-        break;
-
-      default:
-        return;
-    }
-  };
+const ContactForm = () => {
+  const dispatch = useDispatch();
+  const contacts = useSelector(getContacts);
 
   const onFormSubmit = e => {
     e.preventDefault();
-    const data = { id: nanoid(), name: name, number: number };
-    createNewContact(data);
 
-    reset();
-  };
+    const inputName = e.currentTarget.name.value;
+    const inputNumber = e.currentTarget.number.value;
 
-  const reset = () => {
-    setName('');
-    setNumber('');
+    const data = {
+      id: nanoid(),
+      name: inputName,
+      number: inputNumber,
+    };
+
+    const normalizeFilter = inputName.toLowerCase();
+    const stateNameArray = contacts.map(({ name }) => name.toLowerCase());
+
+    !stateNameArray.includes(normalizeFilter)
+      ? dispatch(addContact(data))
+      : Notify.failure(`${data.name} is already in contacts.`, {
+          width: '350px',
+          opacity: 0.8,
+        });
+
+    e.currentTarget.reset();
   };
 
   return (
@@ -49,8 +45,6 @@ const ContactForm = ({ createNewContact }) => {
           pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
           title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
           required
-          value={name}
-          onChange={onInputChange}
         />
       </label>
 
@@ -62,8 +56,6 @@ const ContactForm = ({ createNewContact }) => {
           pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
           title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
           required
-          value={number}
-          onChange={onInputChange}
         />
       </label>
 
@@ -82,7 +74,3 @@ const ContactForm = ({ createNewContact }) => {
 };
 
 export default ContactForm;
-
-ContactForm.propTypes = {
-  createNewContact: PT.func.isRequired,
-};
